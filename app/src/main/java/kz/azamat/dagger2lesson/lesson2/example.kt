@@ -1,52 +1,61 @@
 package kz.azamat.dagger2lesson.lesson2
 
+import android.app.Application
 import dagger.Binds
 import dagger.Component
 import dagger.Module
 import dagger.Provides
+import kz.azamat.dagger2lesson.App
 import kz.azamat.dagger2lesson.MainActivity
 import retrofit2.Retrofit
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Qualifier
+import javax.inject.Singleton
 
-interface IBar
-class Bar @Inject constructor() : IBar
-class SecondBar @Inject constructor() : IBar
-
-class Foo @Inject constructor(
-    @FirstBar private val bar: IBar
-) {
-    fun foo() {
-
-    }
+interface IBar {
+    fun call()
 }
 
-@Module
-interface BarModule2 {
-//    @Binds
-//    @Named("first_bar")
-//    fun bindBar(bar: Bar): IBar
 
-    @Binds
-    @FirstBar
-    fun bindBar(bar: Bar): IBar
+class Bar @Inject constructor(): IBar {
 
-    @Binds
-    fun bindSecondBar(bar: Bar): IBar
+    override fun call() {
+        println("Bar call func")
+
+    }
+
+}
+
+class SecondBar @Inject constructor(): IBar {
+    override fun call() {
+        println("SecondBar call")
+    }
 }
 
 @Module
 interface BarModule {
 
     @Binds
-    fun bindBar(bar: Bar): IBar
+    fun bindBar(bar: Bar) : IBar
+
+//    @Binds
+//    @Named("second_bar")
+//    fun bindSecondBar(bar: SecondBar): IBar
+//
+    @Binds
+    @SecondBarName
+    fun bindSecondBar(bar: SecondBar): IBar
 
 }
 
-//@Module(includes = [])
 @Module
-class NetworkModule {
+object NetworkModule {
+
+    @Provides
+    fun provideCounter(): Counter {
+        return Counter()
+    }
 
     @Provides
     fun provideApiService(retrofit: Retrofit): ApiService {
@@ -54,23 +63,29 @@ class NetworkModule {
     }
 
     @Provides
-    fun provideRetrofit(): Retrofit {
+    fun provideRetrofit() : Retrofit {
         val retrofit = Retrofit.Builder()
-            .baseUrl("https...")
+            .baseUrl("https://www.google.kz/")
             .build()
         return retrofit
     }
-
 }
 
-
 @Component(modules = [BarModule::class, NetworkModule::class])
-interface  FooComponent {
+interface FooComponent {
 
     fun inject(mainActivity: MainActivity)
 
 }
 
-//минус нужно создавать новые аннотации
+//@Component(modules = [])
+//interface AppComponent {
+//
+//    fun inject(application: Application)
+//
+//}
+
+
+
 @Qualifier
-annotation class FirstBar
+annotation class SecondBarName
